@@ -40,6 +40,8 @@ Installation
 
     python setup.py install
 
+`pyliblo` and `python-rtmidi` need some OS libraries installed (i.e. `liblo-dev` and `librtmidi-dev` Debian). Check out https://github.com/velolala/touchosc2midi/tree/master/docker/Dockerfile to see how to install from a plain Debian with python 2.7.
+
 Getting started
 ---------------
 After installation you should have a the `touchosc2midi` script in your path. Start it with
