@@ -3,3 +3,6 @@ raise version string in order to fix broken pypi package
 
 0.0.2 ==> 0.0.3
 added Dockerfile
+
+0.0.3 ==> 0.0.4
+fix the option parsing for non-virtual midi ports

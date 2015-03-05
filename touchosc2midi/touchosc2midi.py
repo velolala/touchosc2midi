@@ -91,6 +91,7 @@ def main():
     options = docopt(__doc__, version=__version__)
     logging.basicConfig(level=logging.DEBUG if options.get('--verbose') else logging.INFO,
                         format="%(message)s")
+    log.debug("Options from cmdline are {}".format(options))
     backend = get_mido_backend()
     if options.get('list'):
         if options.get('backends'):
@@ -99,7 +100,11 @@ def main():
             list_ports(backend)
     else:
         try:
-            midi_in, midi_out = configure_ioports(backend)
+            midi_in, midi_out = configure_ioports(backend,
+                                                  virtual=not (options.get('--midi-in') or
+                                                               options.get('--midi-out')),
+                                                  mido_in=options.get('--midi-in'),
+                                                  mido_out=options.get('--midi-out'))
 
             psa = Advertisement(ip=options.get('--ip'))
             psa.register()
