@@ -34,6 +34,7 @@ def message_from_oscmidipayload(bites):
     """
     bites = bites[0][::-1][0:4]
     msg = mido.parse(bites)
+    log.debug("Midi message to send is {}".format(msg))
     return msg
 
 
@@ -63,7 +64,9 @@ def create_callback_on_osc(sink):
 
 def create_callback_on_midi(target):
     def callback(message):
-        log.debug("sending: {}".format(message))
+        if message.type == "clock":
+            return
+        log.debug("received: {}".format(message))
         osc = liblo.Message('/midi')
         osc.add(('m', message_to_oscmidipayload(message)))
         log.debug("Sending OSC-Midi {} to: {}:{} UDP: {} URL: {}".format(

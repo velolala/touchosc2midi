@@ -6,3 +6,6 @@ added Dockerfile
 
 0.0.3 ==> 0.0.4
 fix the option parsing for non-virtual midi ports
+
+0.0.4 ==> 0.0.5
+fixed a bug with mido's in callback not getting initialized
