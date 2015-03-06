@@ -86,8 +86,8 @@ def configure_ioports(backend, virtual=True, mido_in=None, mido_out=None):
             mido_in = backend.get_input_names()[int(mido_in)]
         if mido_out and mido_out.isdigit():
             mido_out = backend.get_output_names()[int(mido_out)]
-            # we have to init with dummy callback, there seems to be a bug in mido
-            midi_in = backend.open_input(mido_in, callback=lambda x: x)
+        # we have to init with dummy callback, there seems to be a bug in mido
+        midi_in = backend.open_input(mido_in, callback=lambda x: x)
         midi_out = backend.open_output(mido_out)
     log.debug("Inport is {}".format(midi_in))
     log.debug("Outport is {}".format(midi_out))
