@@ -91,6 +91,22 @@ OSC Configuration
 
     touchosc2midi --ip=192.168.0.53
 
+Docker
+------
+
+The git repository contains a `Dockerfile`. To use it:
+
+    cd docker
+
+    docker build -t touchosc2midi:latest .
+
+Above builds a container with all OS dependencies and `touchosc2midi` installed. When `run`ning, you will need to share the `/dev/snd/seq` device and expose the OSC receiving port, e.g. like this:
+
+    docker run -p 0.0.0.0:12101:12101/udp --device=/dev/snd/seq:/dev/snd/seq touchosc2midi:latest
+
+Note, that when using docker, the `zeroconf` service announcement does not work, so you'll have to configure your ip address manually on the touchOSC device.
+
+
 License
 -------
 This program is published under the MIT License. See `LICENSE` for details.
