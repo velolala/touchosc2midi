@@ -12,3 +12,6 @@ fixed a bug with mido's in callback not getting initialized
 
 0.0.5 ==> 0.0.6
 regression: last version introduced an indentation error, that lead to named midi-in not being initialized
+
+0.0.6 ==> 0.0.7
+updated README and MANIFEST

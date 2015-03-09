@@ -1,2 +1,4 @@
-include README.md
 recursive-include touchosc2midi *.py
+include README.md
+include LICENSE
+include CHANGELOG.txt
