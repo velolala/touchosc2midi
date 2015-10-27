@@ -16,15 +16,22 @@ Options:
     --ip=<oscserveraddress>             Network address for OSC server (default: guess).
     -v, --verbose                       Verbose output.
 """
-from __init__ import __version__
-from docopt import docopt
-import socket
-import mido
-import liblo
+
+from __future__ import absolute_import
+
 import logging
+import socket
 import time
-from advertise import PORT, main_ip, Advertisement
-from configuration import list_backends, list_ports, configure_ioports, get_mido_backend
+
+import liblo
+import mido
+
+from docopt import docopt
+
+from . import __version__
+from .advertise import PORT, main_ip, Advertisement
+from .configuration import list_backends, list_ports, configure_ioports, get_mido_backend
+
 
 log = logging.getLogger(__name__)
 
