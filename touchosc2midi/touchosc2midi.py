@@ -23,6 +23,8 @@ import logging
 import socket
 import time
 
+from functools import partial
+
 import liblo
 import mido
 
@@ -36,13 +38,29 @@ from .configuration import list_backends, list_ports, configure_ioports, get_mid
 log = logging.getLogger(__name__)
 
 
+def message_from_oscsysexpayload(payload):
+    """Convert the OSC string into a mido sysex message.
+    """
+    payload = payload.lower()
+
+    if len(payload) < 2:
+        raise ValueError("sysex too short")
+    elif not payload.startswith('f0'):
+        raise ValueError("sysex doesn't start with F0")
+    elif not payload.endswith('f7'):
+        raise ValueError("sysex doesn't end with F7")
+
+    sysex = tuple(int(payload[i:i+2], 16) for i in range(0, len(payload), 2))
+
+    return mido.Message('sysex', data=sysex[1:-1])
+    return msg
+
+
 def message_from_oscmidipayload(bites):
     """Convert the last 4 OSC-midi bytes into a mido message.
     """
-    bites = bites[0][::-1][0:4]
-    msg = mido.parse(bites)
-    log.debug("Midi message to send is {}".format(msg))
-    return msg
+    bites = bites[::-1][0:4]
+    return mido.parse(bites)
 
 
 def message_to_oscmidipayload(message):
@@ -55,35 +73,52 @@ def message_to_oscmidipayload(message):
     return (bites[0], bites[3], bites[2], bites[1])
 
 
-def create_callback_on_osc(sink):
-    def callback(path, args, types, src):
-        log.debug("OSC-Midi recieved from: {}:{} UDP: {} URL: {}".format(
-            src.get_hostname(),
-            src.get_port(),
-            src.get_protocol() == liblo.UDP,
-            src.get_url()))
-        assert path == '/midi'
-        assert types == 'm'
-        log.debug("received /midi,m with args {}".format(args))
-        sink.send(message_from_oscmidipayload(args))
-    return callback
+def message_to_oscsysexpayload(message):
+    """Convert a sysex message into an OSC payload string.
+    """
+    return message.hex().replace(' ', '')
 
 
-def create_callback_on_midi(target):
-    def callback(message):
-        if message.type == "clock":
-            return
-        log.debug("received: {}".format(message))
-        osc = liblo.Message('/midi')
-        osc.add(('m', message_to_oscmidipayload(message)))
-        log.debug("Sending OSC-Midi {} to: {}:{} UDP: {} URL: {}".format(
-            osc,
-            target.get_hostname(),
-            target.get_port(),
-            target.get_protocol() == liblo.UDP,
-            target.get_url()))
-        liblo.send(target, osc)
-    return callback
+def on_osc(sink, path, args, types, src):
+    log.debug("OSC received from: {}:{} UDP: {} URL: {}".format(
+        src.get_hostname(),
+        src.get_port(),
+        src.get_protocol() == liblo.UDP,
+        src.get_url()))
+
+    if path == '/midi' and types == 'm':
+        log.debug("received /midi,m with arg {}".format(args[0]))
+        msg = message_from_oscmidipayload(args[0])
+    elif path == '/sysex' and types == 's':
+        log.debug("received /sysex,s with arg {}".format(args[0]))
+        msg = message_from_oscsysexpayload(args[0])
+
+    log.debug("Sending MIDI message {}".format(msg))
+    sink.send(msg)
+
+
+def on_midi(target, message):
+    if message.type == "clock":
+        return
+
+    log.debug("MIDI received: {}".format(message))
+
+    if message.type == "sysex":
+        addr = '/sysex'
+        arg = ('s', message_to_oscsysexpayload(message))
+    else:
+        addr = '/midi'
+        arg = ('m', message_to_oscmidipayload(message))
+
+    osc = liblo.Message(addr, arg)
+    log.debug("Sending OSC {}, {} to: {}:{} UDP: {} URL: {}".format(
+        addr,
+        arg,
+        target.get_hostname(),
+        target.get_port(),
+        target.get_protocol() == liblo.UDP,
+        target.get_url()))
+    liblo.send(target, osc)
 
 
 def wait_for_target_address(ip=None):
@@ -110,6 +145,7 @@ def main():
             list_ports(backend)
     else:
         try:
+            server = None
             midi_in, midi_out = configure_ioports(backend,
                                                   virtual=not (options.get('--midi-in') or
                                                                options.get('--midi-out')),
@@ -123,12 +159,13 @@ def main():
 
             log.debug("Listening for touchOSC on {}:{}.".format(psa.ip, PORT))
             server = liblo.ServerThread(PORT)
-            server.add_method('/midi', 'm', create_callback_on_osc(midi_out))
+            server.add_method('/midi', 'm', partial(on_osc, midi_out))
+            server.add_method('/sysex', 's', partial(on_osc, midi_out))
 
             target = liblo.Address(target_address, PORT + 1, liblo.UDP)
             log.info("Will send to {}.".format(target.get_url()))
 
-            midi_in.callback = create_callback_on_midi(target)
+            midi_in.callback = partial(on_midi, target)
 
             log.info("Listening for midi at {}.".format(midi_in))
             server.start()
@@ -137,10 +174,12 @@ def main():
         except KeyboardInterrupt:
             psa.unregister()
             psa.close()
-            server.stop()
-            server.free()
+            if server:
+                server.stop()
+                server.free()
             midi_in.close()
             log.info("closed all ports")
+
 
 if __name__ == '__main__':
     main()
