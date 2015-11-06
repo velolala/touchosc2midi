@@ -79,46 +79,54 @@ def message_to_oscsysexpayload(message):
     return message.hex().replace(' ', '')
 
 
-def on_osc(sink, path, args, types, src):
-    log.debug("OSC received from: {}:{} UDP: {} URL: {}".format(
-        src.get_hostname(),
-        src.get_port(),
-        src.get_protocol() == liblo.UDP,
-        src.get_url()))
+class OscHandler(object):
+    def __init__(self, sink):
+        self.sink = sink
 
-    if path == '/midi' and types == 'm':
-        log.debug("received /midi,m with arg {}".format(args[0]))
-        msg = message_from_oscmidipayload(args[0])
-    elif path == '/sysex' and types == 's':
-        log.debug("received /sysex,s with arg {}".format(args[0]))
-        msg = message_from_oscsysexpayload(args[0])
+    def on_osc(self, path, args, types, src):
+        log.debug("OSC received from: {}:{} UDP: {} URL: {}".format(
+            src.get_hostname(),
+            src.get_port(),
+            src.get_protocol() == liblo.UDP,
+            src.get_url()))
 
-    log.debug("Sending MIDI message {}".format(msg))
-    sink.send(msg)
+        if path == '/midi' and types == 'm':
+            log.debug("received /midi,m with arg {}".format(args[0]))
+            msg = message_from_oscmidipayload(args[0])
+        elif path == '/sysex' and types == 's':
+            log.debug("received /sysex,s with arg {}".format(args[0]))
+            msg = message_from_oscsysexpayload(args[0])
+
+        log.debug("Sending MIDI message {}".format(msg))
+        self.sink.send(msg)
 
 
-def on_midi(target, message):
-    if message.type == "clock":
-        return
+class MidiHandler(object):
+    def __init__(self, target):
+        self.target = target
 
-    log.debug("MIDI received: {}".format(message))
+    def on_midi(self, message):
+        if message.type == "clock":
+            return
 
-    if message.type == "sysex":
-        addr = '/sysex'
-        arg = ('s', message_to_oscsysexpayload(message))
-    else:
-        addr = '/midi'
-        arg = ('m', message_to_oscmidipayload(message))
+        log.debug("MIDI received: {}".format(message))
 
-    osc = liblo.Message(addr, arg)
-    log.debug("Sending OSC {}, {} to: {}:{} UDP: {} URL: {}".format(
-        addr,
-        arg,
-        target.get_hostname(),
-        target.get_port(),
-        target.get_protocol() == liblo.UDP,
-        target.get_url()))
-    liblo.send(target, osc)
+        if message.type == "sysex":
+            addr = '/sysex'
+            arg = ('s', message_to_oscsysexpayload(message))
+        else:
+            addr = '/midi'
+            arg = ('m', message_to_oscmidipayload(message))
+
+        osc = liblo.Message(addr, arg)
+        log.debug("Sending OSC {}, {} to: {}:{} UDP: {} URL: {}".format(
+            addr,
+            arg,
+            target.get_hostname(),
+            target.get_port(),
+            target.get_protocol() == liblo.UDP,
+            target.get_url()))
+        liblo.send(self.target, osc)
 
 
 def wait_for_target_address(ip=None):
@@ -159,13 +167,15 @@ def main():
 
             log.debug("Listening for touchOSC on {}:{}.".format(psa.ip, PORT))
             server = liblo.ServerThread(PORT)
-            server.add_method('/midi', 'm', partial(on_osc, midi_out))
-            server.add_method('/sysex', 's', partial(on_osc, midi_out))
+            osc_handler = OscHandler(midi_out)
+            server.add_method('/midi', 'm', osc_handler.on_osc)
+            server.add_method('/sysex', 's', osc_handler.on_osc)
 
             target = liblo.Address(target_address, PORT + 1, liblo.UDP)
             log.info("Will send to {}.".format(target.get_url()))
 
-            midi_in.callback = partial(on_midi, target)
+            midi_handler = MidiHandler(target)
+            midi_in.callback = midi_handler.on_midi
 
             log.info("Listening for midi at {}.".format(midi_in))
             server.start()
