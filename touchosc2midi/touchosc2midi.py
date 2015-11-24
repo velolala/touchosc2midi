@@ -122,10 +122,10 @@ class MidiHandler(object):
         log.debug("Sending OSC {}, {} to: {}:{} UDP: {} URL: {}".format(
             addr,
             arg,
-            target.get_hostname(),
-            target.get_port(),
-            target.get_protocol() == liblo.UDP,
-            target.get_url()))
+            self.target.get_hostname(),
+            self.target.get_port(),
+            self.target.get_protocol() == liblo.UDP,
+            self.target.get_url()))
         liblo.send(self.target, osc)
 
 
