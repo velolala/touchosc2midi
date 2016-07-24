@@ -33,7 +33,7 @@ def build_service_info(ip):
     """Create a zeroconf ServiceInfo for touchoscbridge
     on for `ip` or the guessed default route interface's IP.
     """
-    return ServiceInfo(type=TOUCHOSC_BRIDGE,
+    return ServiceInfo(type_=TOUCHOSC_BRIDGE,
                        name="{}.{}".format(socket.gethostname(), TOUCHOSC_BRIDGE),
                        address=socket.inet_aton(ip),
                        port=PORT,
