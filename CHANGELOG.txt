@@ -15,3 +15,6 @@ regression: last version introduced an indentation error, that lead to named mid
 
 0.0.6 ==> 0.0.7
 updated README and MANIFEST
+
+0.0.7 ==> 0.0.8
+added fix for newer `zeroconf` and pinned `pyliblo<=0.10.0`
