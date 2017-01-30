@@ -112,7 +112,7 @@ def main():
             psa = Advertisement(ip=options.get('--ip'))
             psa.register()
 
-            target_address = wait_for_target_address()
+            target_address = wait_for_target_address(psa.ip)
 
             log.debug("Listening for touchOSC on {}:{}.".format(psa.ip, PORT))
             server = liblo.ServerThread(PORT)
