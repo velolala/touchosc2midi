@@ -2,8 +2,6 @@
 """
 touchosc2midi -- a TouchOSC to Midi Bridge.
 
-(c) 2015 velolala <fiets@einstueckheilewelt.de>
-
 Usage:
     touchosc2midi --help
     touchosc2midi list (backends | ports) [-v]
@@ -22,8 +20,6 @@ from __future__ import absolute_import
 import logging
 import socket
 import time
-
-from functools import partial
 
 import liblo
 import mido
@@ -50,10 +46,9 @@ def message_from_oscsysexpayload(payload):
     elif not payload.endswith('f7'):
         raise ValueError("sysex doesn't end with F7")
 
-    sysex = tuple(int(payload[i:i+2], 16) for i in range(0, len(payload), 2))
+    sysex = tuple(int(payload[i:i + 2], 16) for i in range(0, len(payload), 2))
 
     return mido.Message('sysex', data=sysex[1:-1])
-    return msg
 
 
 def message_from_oscmidipayload(bites):
@@ -154,11 +149,13 @@ def main():
     else:
         try:
             server = None
-            midi_in, midi_out = configure_ioports(backend,
-                                                  virtual=not (options.get('--midi-in') or
-                                                               options.get('--midi-out')),
-                                                  mido_in=options.get('--midi-in'),
-                                                  mido_out=options.get('--midi-out'))
+            midi_in, midi_out = configure_ioports(
+                backend,
+                virtual=not (options.get('--midi-in') or
+                             options.get('--midi-out')),
+                mido_in=options.get('--midi-in'),
+                mido_out=options.get('--midi-out')
+            )
 
             psa = Advertisement(ip=options.get('--ip'))
             psa.register()
