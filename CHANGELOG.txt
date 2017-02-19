@@ -21,3 +21,7 @@ added fix for newer `zeroconf` and pinned `pyliblo<=0.10.0`
 
 0.0.8 ==> 0.0.9
 fixed functionality of `--ip` argument
+
+0.0.9 ==> 0.0.10
+added python 3 compatibility (thanks @SpotlightKid)
+added sysex support (touchOSC 1.9.4+) (thanks @SpotlightKid)
