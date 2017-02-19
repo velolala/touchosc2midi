@@ -1,6 +1,18 @@
 from setuptools import setup
 from touchosc2midi import __version__
 
+requirement_dependency_link_replacements = {
+    "git+https://github.com/dsacre/pyliblo.git@33999ca8178a01c720e99856df769f1986c7e912#egg=pyliblo-0.10.0": "pyliblo",
+}
+
+install_requires = list(set(
+    requirement_dependency_link_replacements.get(requirement.strip(), requirement.strip())
+    for requirement in open('requirements.txt') if not requirement.lstrip().startswith('#')
+    )
+)
+
+dependency_links = list(requirement_dependency_link_replacements.keys())
+
 setup(name='touchosc2midi',
       version=__version__,
       description="TouchOSC Bridge clone in python",
@@ -9,11 +21,8 @@ setup(name='touchosc2midi',
       author_email="fiets@einstueckheilewelt.de",
       url="https://github.com/velolala/touchosc2midi",
       license="LICENSE",
-      install_requires=["pyliblo<=0.10.0",
-                        "docopt",
-                        "mido",
-                        "zeroconf",
-                        "python-rtmidi==0.5b1"],
+      install_requires=install_requires,
+      dependency_links=dependency_links,
       packages=["touchosc2midi"],
       entry_points={"console_scripts": [
           "touchosc2midi = touchosc2midi.touchosc2midi:main"

@@ -28,6 +28,12 @@ and without these, it wouldn't be such an embarrassingly trivial program.
 Installation
 ------------
 
+### Prerequisites
+You will need a recent version of `pip` and `cython`
+
+    pip install -U pip
+    pip install cython
+
 ### From pypi
 
     pip install touchosc2midi
@@ -35,10 +41,8 @@ Installation
 ### From source
 
     git clone https://github.com/velolala/touchosc2midi
-
     cd touchosc2midi
-
-    python setup.py install
+    pip install .
 
 `pyliblo` and `python-rtmidi` need some OS libraries installed (i.e. `liblo-dev` and `librtmidi-dev` Debian). Check out https://github.com/velolala/touchosc2midi/tree/master/docker/Dockerfile to see how to install from a plain Debian with python 2.7.
 
