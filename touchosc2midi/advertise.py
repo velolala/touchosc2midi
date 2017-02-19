@@ -34,7 +34,10 @@ def build_service_info(ip):
     on for `ip` or the guessed default route interface's IP.
     """
     return ServiceInfo(type_=TOUCHOSC_BRIDGE,
-                       name="{}.{}".format(socket.gethostname(), TOUCHOSC_BRIDGE),
+                       name="{}.{}".format(
+                           socket.gethostname(),
+                           TOUCHOSC_BRIDGE
+                       ),
                        address=socket.inet_aton(ip),
                        port=PORT,
                        properties=dict(),
@@ -54,9 +57,11 @@ class Advertisement(object):
         """Registers the service on the network.
         """
         self.zeroconf.register_service(self.info)
-        log.debug("Registered {} on {}:{}".format(self.info.name,
-                                                   self.ip,
-                                                   self.info.port))
+        log.debug("Registered {} on {}:{}".format(
+            self.info.name,
+            self.ip,
+            self.info.port
+        ))
 
     def unregister(self):
         """Unregisters the service.
@@ -85,6 +90,7 @@ class Advertisement(object):
         return socket.inet_ntoa(self.info.address)
 
     ip = property(get_ip)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

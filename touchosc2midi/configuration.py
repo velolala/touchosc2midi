@@ -32,7 +32,7 @@ def get_mido_backend():
     in environment it will return the first available API for rtmidi.
     """
     log.debug("MIDO_BACKEND from env: {}".format(os.environ.get('MIDO_BACKEND')))
-    if not 'MIDO_BACKEND' in os.environ:
+    if 'MIDO_BACKEND' not in os.environ:
         rtmidi_apis = get_rtmidi_backends()
         if rtmidi_apis:
             os.environ['MIDO_BACKEND'] = rtmidi_apis[0]
