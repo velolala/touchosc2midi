@@ -18,9 +18,14 @@ def default_route_interface():
     Query netifaces for the default route's ip.
     Note: this only checks for IPv4 addresses.
     """
-    interface = netifaces.gateways()['default'][netifaces.AF_INET][1]
-    ip = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
-    return ip
+    interface = netifaces.gateways()['default']
+    if interface:
+        name = interface[netifaces.AF_INET][1]
+        ip = netifaces.ifaddresses(name)[netifaces.AF_INET][0]['addr']
+        log.debug("found '{}:{}' as default route.".format(name, ip))
+        return ip
+    else:
+        raise RuntimeError("default interface not found. Check your network or use --ip switch.")
 
 
 def build_service_info(ip):
