@@ -27,7 +27,7 @@ import mido
 from docopt import docopt
 
 from . import __version__
-from .advertise import PORT, main_ip, Advertisement
+from .advertise import PORT, default_route_interface, Advertisement
 from .configuration import list_backends, list_ports, configure_ioports, get_mido_backend
 
 
@@ -130,7 +130,7 @@ def wait_for_target_address(ip=None):
     """
     log.info("Waiting for first package from touchOSC in order to setup target address...")
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((ip or main_ip(), PORT))
+    s.bind((ip or default_route_interface(), PORT))
     _, (address, _) = s.recvfrom(1)
     return address
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 """
 Announce touchSCO-MIDI bridge via zeroconf.
-
-(c) 2015 velolala <fiets@einstueckheilewelt.de>
 """
 import socket
+import netifaces
 from time import sleep
 from zeroconf import Zeroconf, ServiceInfo
 import logging
@@ -14,18 +13,13 @@ TOUCHOSC_BRIDGE = '_touchoscbridge._udp.local.'
 PORT = 12101
 
 
-def main_ip():
+def default_route_interface():
     """
-    '192.0.2.0' is defined TEST-NET in RFC 5737,
-    so there *shouldn't* be custom routing for this.
-
-    :return: the IP of the default route's interface.
+    Query netifaces for the default route's ip.
+    Note: this only checks for IPv4 addresses.
     """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect(("192.0.2.0", 0))
-    ip = sock.getsockname()[0]
-    log.debug("Assuming {} for main route's IP.".format(ip))
-    sock.close()
+    interface = netifaces.gateways()['default'][netifaces.AF_INET][1]
+    ip = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
     return ip
 
 
@@ -51,7 +45,7 @@ class Advertisement(object):
              (if None: default route's IP).
         """
         self.zeroconf = Zeroconf()
-        self.info = build_service_info(ip=ip or main_ip())
+        self.info = build_service_info(ip=ip or default_route_interface())
 
     def register(self):
         """Registers the service on the network.
@@ -75,7 +69,7 @@ class Advertisement(object):
         :ip: if string `ip` is given, use given IP when registering.
         """
         self.unregister()
-        self.info = build_service_info(ip=ip or main_ip())
+        self.info = build_service_info(ip=ip or default_route_interface())
         self.register()
 
     def close(self):
