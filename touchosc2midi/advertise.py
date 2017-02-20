@@ -22,7 +22,7 @@ def main_ip():
     :return: the IP of the default route's interface.
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect(("192.0.2.0", 0))
+    sock.connect(("192.0.2.0", 1))
     ip = sock.getsockname()[0]
     log.debug("Assuming {} for main route's IP.".format(ip))
     sock.close()
