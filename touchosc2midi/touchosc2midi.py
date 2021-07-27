@@ -177,7 +177,7 @@ def main():
             log.info("Listening for midi at {}.".format(midi_in))
             server.start()
             while True:
-                time.sleep(.0001)
+                time.sleep(.01)
         except KeyboardInterrupt:
             psa.unregister()
             psa.close()
