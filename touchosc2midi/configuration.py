@@ -76,6 +76,9 @@ def configure_ioports(backend, virtual=True, mido_in=None, mido_out=None):
             # we have to init with dummy callback, there seems to be a bug in mido
             midi_in = backend.open_input(VIRT_MIDI_PORT, virtual=True, callback=lambda x: x)
             midi_out = backend.open_output(VIRT_MIDI_PORT, virtual=True)
+            # work around bug in mido prior to 1.3.0
+            if backend.api == 'LINUX_ALSA':
+                midi_out._rt.set_port_name(VIRT_MIDI_PORT)
         except ImportError:
             log.error("Cannot open virtual IOports. Make sure, rtmidi is available"
                       "or choose another backend.")
