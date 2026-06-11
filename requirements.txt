@@ -1,5 +1,5 @@
 git+https://github.com/dsacre/pyliblo.git@33999ca8178a01c720e99856df769f1986c7e912#egg=pyliblo-0.10.0
-zeroconf==0.17.7
+zeroconf==0.149.12
 python-rtmidi==1.0.0
 netifaces==0.10.5
 mido==1.1.24
